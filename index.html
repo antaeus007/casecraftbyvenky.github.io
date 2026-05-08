@@ -1,85 +1,1390 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CaseCraft by Venky</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f9f9f9;
-      color: #333;
-    }
-    header {
-      background-color: #222;
-      color: #fff;
-      padding: 2rem;
-      text-align: center;
-    }
-    nav a {
-      margin: 0 15px;
-      color: #fff;
-      text-decoration: none;
-    }
-    section {
-      padding: 2rem;
-      max-width: 900px;
-      margin: auto;
-    }
-    footer {
-      text-align: center;
-      padding: 1rem;
-      background-color: #eee;
-    }
-    .highlight {
-      color: #0078D4;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CaseCraft — Strategy. Dissected.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0e0d0b;
+    --paper: #f5f0e8;
+    --cream: #ede8dc;
+    --gold: #a8833a;
+    --gold-light: #c9a55a;
+    --gold-pale: #e8d9b8;
+    --red: #8b1a1a;
+    --mid: #5a5040;
+    --dim: #9a8e7a;
+    --rule: #d4c9b0;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Libre Baskerville', Georgia, serif;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ── TYPOGRAPHY ── */
+  .display {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .mono {
+    font-family: 'DM Mono', 'Courier New', monospace;
+    font-weight: 400;
+  }
+  .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 0 40px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(245, 240, 232, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--gold); }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--mid);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+
+  .nav-cta {
+    background: var(--ink) !important;
+    color: var(--paper) !important;
+    padding: 8px 20px;
+    letter-spacing: 0.15em !important;
+  }
+  .nav-cta:hover { background: var(--gold) !important; color: var(--ink) !important; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    padding: 120px 40px 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .hero::before {
+    content: 'CASE\ACRAFT';
+    white-space: pre;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(120px, 18vw, 280px);
+    font-weight: 700;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(168, 131, 58, 0.08);
+    position: absolute;
+    right: -2%;
+    top: 50%;
+    transform: translateY(-50%);
+    line-height: 0.85;
+    pointer-events: none;
+    letter-spacing: -0.04em;
+    z-index: 0;
+  }
+
+  .hero-left { position: relative; z-index: 1; }
+
+  .hero-kicker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .hero-kicker::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  .hero-title {
+    font-size: clamp(52px, 6vw, 88px);
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: 300;
+    font-style: italic;
+    color: var(--mid);
+    margin-bottom: 40px;
+    line-height: 1.4;
+  }
+
+  .hero-body {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--mid);
+    max-width: 480px;
+    margin-bottom: 48px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 14px 32px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--ink);
+    transition: all 0.25s;
+    display: inline-block;
+  }
+  .btn-primary:hover {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--ink);
+  }
+
+  .btn-secondary {
+    color: var(--ink);
+    padding: 14px 32px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--rule);
+    transition: all 0.25s;
+    display: inline-block;
+  }
+  .btn-secondary:hover {
+    border-color: var(--ink);
+    background: var(--cream);
+  }
+
+  .hero-right {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── CASE CARD PREVIEW ── */
+  .case-card {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s;
+  }
+  .case-card:hover { transform: translateY(-2px); }
+  .case-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+  }
+
+  .case-card-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .case-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.3;
+    margin-bottom: 12px;
+    color: var(--paper);
+  }
+  .case-card-excerpt {
+    font-size: 13px;
+    line-height: 1.7;
+    color: rgba(245,240,232,0.5);
+    margin-bottom: 20px;
+  }
+  .case-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .case-card-meta span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(245,240,232,0.3);
+    letter-spacing: 0.1em;
+  }
+  .case-card-lock {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    padding: 4px 10px;
+    border: 1px solid rgba(168,131,58,0.4);
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .card-small {
+    background: var(--cream);
+    border: 1px solid var(--rule);
+    padding: 20px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .card-small:hover { border-color: var(--gold); }
+  .card-small-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--gold-pale);
+    line-height: 1;
+    flex-shrink: 0;
+    min-width: 36px;
+  }
+  .card-small-body {}
+  .card-small-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .card-small-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  /* ── HORIZONTAL RULE ── */
+  .section-rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    background: var(--ink);
+    padding: 32px 40px;
+  }
+  .stats-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px;
+    font-weight: 300;
+    color: var(--paper);
+    line-height: 1;
+    display: block;
+  }
+  .stat-num em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.35);
+    margin-top: 6px;
+    display: block;
+  }
+  .stats-divider {
+    width: 1px;
+    height: 48px;
+    background: rgba(245,240,232,0.1);
+  }
+
+  /* ── ABOUT SECTION ── */
+  .about {
+    padding: 100px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 100px;
+    align-items: start;
+  }
+
+  .about-left {}
+  .section-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .section-eyebrow::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  .about-title {
+    font-size: clamp(40px, 4vw, 60px);
+    margin-bottom: 32px;
+    line-height: 1.1;
+  }
+  .about-title em { font-style: italic; color: var(--gold); }
+
+  .about-bio {
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--mid);
+    margin-bottom: 20px;
+  }
+
+  .about-credentials {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .credential {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .credential-icon {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold);
+  }
+  .credential-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--mid);
+    letter-spacing: 0.05em;
+  }
+  .credential-text strong {
+    display: block;
+    color: var(--ink);
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+
+  .about-right {}
+  .philosophy-block {
+    background: var(--ink);
+    padding: 48px;
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .philosophy-block::before {
+    content: '\201C';
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 120px;
+    color: var(--gold);
+    opacity: 0.15;
+    position: absolute;
+    top: -20px;
+    left: 32px;
+    line-height: 1;
+  }
+  .philosophy-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--paper);
+    line-height: 1.5;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 24px;
+  }
+  .philosophy-attr {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .expertise-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .expertise-item {
+    background: var(--paper);
+    padding: 20px;
+    transition: background 0.2s;
+  }
+  .expertise-item:hover { background: var(--cream); }
+  .expertise-item .label { margin-bottom: 4px; }
+  .expertise-item p {
+    font-size: 13px;
+    color: var(--mid);
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+
+  /* ── WHAT IS CASECRAFT ── */
+  .what {
+    background: var(--ink);
+    padding: 100px 40px;
+  }
+  .what-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .what-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: end;
+    margin-bottom: 64px;
+    padding-bottom: 64px;
+    border-bottom: 1px solid rgba(245,240,232,0.1);
+  }
+  .what-title {
+    font-size: clamp(44px, 5vw, 72px);
+    color: var(--paper);
+  }
+  .what-title em { color: var(--gold); font-style: italic; }
+  .what-desc {
+    font-size: 16px;
+    line-height: 1.8;
+    color: rgba(245,240,232,0.55);
+  }
+
+  .formats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(245,240,232,0.08);
+  }
+  .format-item {
+    background: var(--ink);
+    padding: 40px;
+    transition: background 0.25s;
+  }
+  .format-item:hover { background: #161410; }
+  .format-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 64px;
+    font-weight: 300;
+    color: rgba(168,131,58,0.2);
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .format-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--paper);
+    margin-bottom: 16px;
+  }
+  .format-desc {
+    font-size: 14px;
+    line-height: 1.8;
+    color: rgba(245,240,232,0.45);
+    margin-bottom: 24px;
+  }
+  .format-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .format-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border: 1px solid rgba(168,131,58,0.25);
+    color: var(--gold);
+  }
+
+  /* ── TOPICS ── */
+  .topics {
+    padding: 100px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .topics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .topics-title {
+    font-size: clamp(36px, 4vw, 56px);
+  }
+  .topics-title em { font-style: italic; color: var(--gold); }
+
+  .topics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-bottom: 48px;
+  }
+  .topic-item {
+    background: var(--paper);
+    padding: 28px 24px;
+    transition: background 0.2s;
+    cursor: default;
+  }
+  .topic-item:hover { background: var(--ink); }
+  .topic-item:hover .topic-name { color: var(--paper); }
+  .topic-item:hover .topic-count { color: var(--gold); }
+  .topic-icon {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 300;
+    color: var(--gold-pale);
+    line-height: 1;
+    margin-bottom: 12px;
+    transition: color 0.2s;
+  }
+  .topic-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+    transition: color 0.2s;
+  }
+  .topic-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  /* ── PRICING ── */
+  .pricing {
+    background: var(--cream);
+    padding: 100px 40px;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .pricing-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .pricing-header {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+  .pricing-title {
+    font-size: clamp(40px, 4vw, 60px);
+    margin-bottom: 16px;
+  }
+  .pricing-title em { font-style: italic; color: var(--gold); }
+  .pricing-subtitle {
+    font-size: 16px;
+    color: var(--mid);
+    font-style: italic;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--rule);
+  }
+
+  .plan {
+    padding: 48px 40px;
+    border-right: 1px solid var(--rule);
+    position: relative;
+  }
+  .plan:last-child { border-right: none; }
+  .plan-featured {
+    background: var(--ink);
+  }
+  .plan-featured::before {
+    content: 'Most Popular';
+    position: absolute;
+    top: -1px; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    background: var(--gold);
+    color: var(--ink);
+    padding: 4px 16px;
+  }
+
+  .plan-tier {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+  .plan-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 56px;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .plan-price sup {
+    font-size: 24px;
+    vertical-align: super;
+  }
+  .plan-featured .plan-price { color: var(--paper); }
+  .plan-featured .plan-tier { color: var(--gold); }
+  .plan-period {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    margin-bottom: 32px;
+  }
+  .plan-featured .plan-period { color: rgba(245,240,232,0.4); }
+  .plan-featured .plan-period strong { color: rgba(245,240,232,0.7); }
+
+  .plan-divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin-bottom: 28px;
+  }
+  .plan-featured .plan-divider { border-color: rgba(245,240,232,0.12); }
+
+  .plan-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .plan-features li {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--mid);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .plan-featured .plan-features li { color: rgba(245,240,232,0.6); }
+  .plan-features li::before {
+    content: '—';
+    color: var(--gold);
+    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .plan-btn {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.25s;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+  }
+  .plan-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .plan-featured .plan-btn {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--ink);
+  }
+  .plan-featured .plan-btn:hover {
+    background: var(--gold-light);
+    border-color: var(--gold-light);
+  }
+
+  /* ── WAITLIST ── */
+  .waitlist {
+    background: var(--ink);
+    padding: 100px 40px;
+  }
+  .waitlist-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .waitlist-title {
+    font-size: clamp(40px, 5vw, 64px);
+    color: var(--paper);
+    margin-bottom: 16px;
+  }
+  .waitlist-title em { font-style: italic; color: var(--gold); }
+  .waitlist-sub {
+    font-size: 16px;
+    color: rgba(245,240,232,0.45);
+    margin-bottom: 48px;
+    font-style: italic;
+  }
+  .waitlist-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 48px;
+    padding: 12px 24px;
+    border: 1px solid rgba(168,131,58,0.3);
+  }
+  .waitlist-date-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .waitlist-form {
+    display: flex;
+    gap: 0;
+    max-width: 480px;
+    margin: 0 auto 24px;
+  }
+  .waitlist-input {
+    flex: 1;
+    background: rgba(245,240,232,0.06);
+    border: 1px solid rgba(245,240,232,0.15);
+    border-right: none;
+    color: var(--paper);
+    padding: 14px 20px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .waitlist-input::placeholder { color: rgba(245,240,232,0.25); }
+  .waitlist-input:focus { border-color: var(--gold); }
+
+  .waitlist-btn {
+    background: var(--gold);
+    border: 1px solid var(--gold);
+    color: var(--ink);
+    padding: 14px 28px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s;
+    white-space: nowrap;
+  }
+  .waitlist-btn:hover { background: var(--gold-light); border-color: var(--gold-light); }
+
+  .waitlist-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(245,240,232,0.2);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    border-top: 1px solid rgba(245,240,232,0.08);
+    padding: 40px;
+  }
+  .footer-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--paper);
+  }
+  .footer-logo span { color: var(--gold); }
+  .footer-copy {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: rgba(245,240,232,0.2);
+  }
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+  .footer-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.25);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--gold); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up {
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards;
+  }
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.25s; }
+  .delay-3 { animation-delay: 0.4s; }
+  .delay-4 { animation-delay: 0.55s; }
+  .delay-5 { animation-delay: 0.7s; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1024px) {
+    .hero { grid-template-columns: 1fr; gap: 48px; padding-top: 100px; }
+    .hero::before { display: none; }
+    .about { grid-template-columns: 1fr; gap: 48px; }
+    .what-header { grid-template-columns: 1fr; gap: 24px; }
+    .formats-grid { grid-template-columns: 1fr; }
+    .topics-grid { grid-template-columns: repeat(2, 1fr); }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .plan { border-right: none; border-bottom: 1px solid var(--rule); }
+  }
+  @media (max-width: 640px) {
+    nav { padding: 0 20px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 20px 60px; }
+    .about, .topics, .waitlist, .pricing { padding: 60px 20px; }
+    .stats-bar { padding: 32px 20px; }
+    .stats-inner { justify-content: center; gap: 32px; }
+    .stats-divider { display: none; }
+    .topics-grid { grid-template-columns: 1fr 1fr; }
+    .expertise-grid { grid-template-columns: 1fr; }
+    .waitlist-form { flex-direction: column; }
+    .waitlist-input { border-right: 1px solid rgba(245,240,232,0.15); }
+  }
+</style>
 </head>
 <body>
 
-  <header>
-    <h1>CaseCraft by Venky</h1>
-    <p>Your hub for strategy cases and business insights</p>
-    <nav>
-      <a href="#about">About</a>
-      <a href="#what">What We Do</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">CASE<span>CRAFT</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#topics">Topics</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#waitlist" class="nav-cta">Join Waitlist</a></li>
+  </ul>
+</nav>
 
-  <section id="about">
-    <h2>About Venky</h2>
-    <p>
-      Venky Srambikal is a global business executive and case study author with decades of experience in operational turnarounds, strategy execution, and pricing excellence. Through CaseCraft, he shares powerful HBS-style business cases and white papers built from real-world experience.
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-kicker fade-up delay-1">
+      <span class="label">Launching June 9, 2026</span>
+    </div>
+    <h1 class="display hero-title fade-up delay-2">
+      Strategy.<br><em>Dissected.</em>
+    </h1>
+    <p class="hero-subtitle fade-up delay-3">
+      HBS-calibre case studies for the<br>executive who never stops learning.
     </p>
-  </section>
+    <p class="hero-body fade-up delay-4">
+      The world's most consequential business decisions — pricing wars, M&A collapses, OPEX transformations — examined through the rigour of Harvard methodology, updated for the dynamics of today's markets.
+    </p>
+    <div class="hero-actions fade-up delay-5">
+      <a href="#waitlist" class="btn-primary">Join the Waitlist</a>
+      <a href="#topics" class="btn-secondary">See Topics</a>
+    </div>
+  </div>
 
-  <section id="what">
-    <h2>What is CaseCraft?</h2>
-    <p>
-      <span class="highlight">CaseCraft by Venky</span> develops practical, narrative-driven business cases designed for executives, students, and educators. Topics include:
+  <div class="hero-right fade-up delay-3">
+    <div class="case-card">
+      <div class="case-card-tag">HBS Case Study · Strategy</div>
+      <div class="case-card-title">The Nvidia Pricing Paradox: How Scarcity Became the Most Powerful Go-to-Market Strategy in Tech History</div>
+      <div class="case-card-excerpt">When H100 allocations became a geopolitical instrument, Jensen Huang had already rewritten the rules of enterprise pricing. Four discussion questions that no MBA programme has yet answered.</div>
+      <div class="case-card-meta">
+        <span>14 min read · May 2026</span>
+        <span class="case-card-lock">Members Only</span>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+      <div class="card-small">
+        <div class="card-small-num">02</div>
+        <div class="card-small-body">
+          <div class="card-small-tag">M&A</div>
+          <div class="card-small-title">Kraft-Heinz: Value Destruction at Scale</div>
+        </div>
+      </div>
+      <div class="card-small">
+        <div class="card-small-num">03</div>
+        <div class="card-small-body">
+          <div class="card-small-tag">Pricing</div>
+          <div class="card-small-title">Dynamic Pricing's Blowback Problem</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat">
+      <span class="stat-num">4<em>×</em></span>
+      <span class="stat-label">Articles per month</span>
+    </div>
+    <div class="stats-divider"></div>
+    <div class="stat">
+      <span class="stat-num">2</span>
+      <span class="stat-label">Formats: Case + Analysis</span>
+    </div>
+    <div class="stats-divider"></div>
+    <div class="stat">
+      <span class="stat-num">6</span>
+      <span class="stat-label">Core domains covered</span>
+    </div>
+    <div class="stats-divider"></div>
+    <div class="stat">
+      <span class="stat-num">0<em>%</em></span>
+      <span class="stat-label">Filler. Ever.</span>
+    </div>
+  </div>
+</div>
+
+<hr class="section-rule">
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-left">
+    <div class="section-eyebrow">
+      <span class="label">The Author</span>
+    </div>
+    <h2 class="display about-title">Global executive.<br><em>Rigorous</em> analyst.</h2>
+    <p class="about-bio">
+      CaseCraft is written by Venky — a senior global executive with decades of operational and strategic leadership across multiple industries, geographies, and market cycles.
     </p>
-    <ul>
-      <li>Strategic renewal & pricing innovation</li>
-      <li>Turnarounds in manufacturing and industrial services</li>
-      <li>Harvard-style case teaching guides and templates</li>
+    <p class="about-bio">
+      Having navigated M&A transactions, large-scale OPEX transformations, and complex pricing decisions from the inside, the analysis here is not academic. It is the perspective of someone who has sat at the table where these decisions are made.
+    </p>
+    <p class="about-bio">
+      The Harvard Business School case method is the framework. The real world is the laboratory.
+    </p>
+
+    <div class="about-credentials">
+      <div class="credential">
+        <div class="credential-icon">G</div>
+        <div class="credential-text">
+          <strong>Global Executive Leadership</strong>
+          Multi-decade cross-industry, cross-geography track record
+        </div>
+      </div>
+      <div class="credential">
+        <div class="credential-icon">M</div>
+        <div class="credential-text">
+          <strong>M&A & Corporate Development</strong>
+          Deal structuring, due diligence, integration
+        </div>
+      </div>
+      <div class="credential">
+        <div class="credential-icon">S</div>
+        <div class="credential-text">
+          <strong>Strategy & Pricing</strong>
+          Go-to-market, competitive positioning, value capture
+        </div>
+      </div>
+      <div class="credential">
+        <div class="credential-icon">O</div>
+        <div class="credential-text">
+          <strong>Operational Transformation</strong>
+          OPEX, COMEX, large-scale restructuring
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="about-right">
+    <div class="philosophy-block">
+      <p class="philosophy-quote">
+        "The best business education is not a classroom. It is a crisis, a merger, a pricing war — and the discipline to understand why it unfolded the way it did."
+      </p>
+      <div class="philosophy-attr">— The CaseCraft Philosophy</div>
+    </div>
+
+    <div class="expertise-grid">
+      <div class="expertise-item">
+        <div class="label">Strategy</div>
+        <p>Competitive dynamics, market positioning, long-range planning</p>
+      </div>
+      <div class="expertise-item">
+        <div class="label">Pricing</div>
+        <p>Value-based pricing, dynamic models, margin architecture</p>
+      </div>
+      <div class="expertise-item">
+        <div class="label">M&A</div>
+        <p>Deal thesis, integration playbooks, value destruction analysis</p>
+      </div>
+      <div class="expertise-item">
+        <div class="label">OPEX / COMEX</div>
+        <p>Cost transformation, efficiency programs, capital allocation</p>
+      </div>
+      <div class="expertise-item">
+        <div class="label">Business Models</div>
+        <p>Revenue architecture, platform economics, disruption patterns</p>
+      </div>
+      <div class="expertise-item">
+        <div class="label">Leadership</div>
+        <p>Decision-making under uncertainty, organisational design</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+<!-- WHAT IS CASECRAFT -->
+<section class="what" id="what">
+  <div class="what-inner">
+    <div class="what-header">
+      <h2 class="display what-title">Not a newsletter.<br>A <em>thinking</em> tool.</h2>
+      <p class="what-desc">
+        Every CaseCraft piece is structured around a real decision, a real set of consequences, and a real lesson. Two formats. Both demanding. Both worth your time.
+      </p>
+    </div>
+
+    <div class="formats-grid">
+      <div class="format-item">
+        <div class="format-num">01</div>
+        <div class="format-title">HBS Case Study</div>
+        <p class="format-desc">
+          A full narrative case in the Harvard tradition. Background, situation, decision point, exhibits, and four discussion questions that force structured thinking. Includes a teaching note with applicable frameworks.
+        </p>
+        <div class="format-tags">
+          <span class="format-tag">Narrative</span>
+          <span class="format-tag">Exhibits</span>
+          <span class="format-tag">Discussion Questions</span>
+          <span class="format-tag">Teaching Note</span>
+          <span class="format-tag">Frameworks</span>
+        </div>
+      </div>
+      <div class="format-item">
+        <div class="format-num">02</div>
+        <div class="format-title">Analysis Article</div>
+        <p class="format-desc">
+          Executive summary up front. The "so what" in three bullets before the argument. Rigorous breakdown, concrete implications, risks acknowledged. Written for CFOs, not commentators.
+        </p>
+        <div class="format-tags">
+          <span class="format-tag">Executive Summary</span>
+          <span class="format-tag">Data-Led</span>
+          <span class="format-tag">Implications</span>
+          <span class="format-tag">Risk Assessment</span>
+          <span class="format-tag">Bottom Line</span>
+        </div>
+      </div>
+      <div class="format-item">
+        <div class="format-num">03</div>
+        <div class="format-title">Updated for Now</div>
+        <p class="format-desc">
+          Classic HBS cases are brilliant but frozen in time. Every CaseCraft study extends the analysis into current market conditions — asking what the protagonists would face if the decision landed on their desk today.
+        </p>
+        <div class="format-tags">
+          <span class="format-tag">Contemporary Context</span>
+          <span class="format-tag">Market Dynamics</span>
+          <span class="format-tag">Updated Data</span>
+          <span class="format-tag">Current Parallels</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOPICS -->
+<section class="topics" id="topics">
+  <div class="topics-header">
+    <h2 class="display topics-title">What we <em>cover</em></h2>
+    <span class="label">6 core domains</span>
+  </div>
+
+  <div class="topics-grid">
+    <div class="topic-item">
+      <div class="topic-icon">Σ</div>
+      <div class="topic-name">Strategy</div>
+      <div class="topic-count">Competitive dynamics · Positioning · Long-range bets</div>
+    </div>
+    <div class="topic-item">
+      <div class="topic-icon">₱</div>
+      <div class="topic-name">Pricing</div>
+      <div class="topic-count">Value capture · Margin wars · Dynamic models</div>
+    </div>
+    <div class="topic-item">
+      <div class="topic-icon">M</div>
+      <div class="topic-name">M&A</div>
+      <div class="topic-count">Deal thesis · Integration · Value destruction</div>
+    </div>
+    <div class="topic-item">
+      <div class="topic-icon">Δ</div>
+      <div class="topic-name">OPEX</div>
+      <div class="topic-count">Cost transformation · Efficiency · Restructuring</div>
+    </div>
+    <div class="topic-item">
+      <div class="topic-icon">©</div>
+      <div class="topic-name">COMEX</div>
+      <div class="topic-count">Capital allocation · Investment · Returns</div>
+    </div>
+    <div class="topic-item">
+      <div class="topic-icon">∞</div>
+      <div class="topic-name">Business Models</div>
+      <div class="topic-count">Revenue architecture · Disruption · Platform economics</div>
+    </div>
+    <div class="topic-item">
+      <div class="topic-icon">◈</div>
+      <div class="topic-name">Leadership</div>
+      <div class="topic-count">Decisions under uncertainty · Org design · Culture</div>
+    </div>
+    <div class="topic-item">
+      <div class="topic-icon">⊕</div>
+      <div class="topic-name">Global Markets</div>
+      <div class="topic-count">Emerging markets · Macro shifts · Cross-border complexity</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-rule">
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="pricing-inner">
+    <div class="pricing-header">
+      <div class="section-eyebrow" style="justify-content:center;">
+        <span class="label">Access Tiers</span>
+      </div>
+      <h2 class="display pricing-title">Read free.<br>Think <em>deeper</em>.</h2>
+      <p class="pricing-subtitle">Start free. Upgrade when you see the value — and you will.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- FREE -->
+      <div class="plan">
+        <div class="plan-tier">Free Reader</div>
+        <div class="display plan-price">$0</div>
+        <div class="plan-period">Forever free</div>
+        <hr class="plan-divider">
+        <ul class="plan-features">
+          <li>Preview of every new article</li>
+          <li>Full access to 2 permanent free articles</li>
+          <li>Monthly newsletter digest</li>
+          <li>Topic index and archive access</li>
+        </ul>
+        <a href="#waitlist" class="plan-btn">Start Free</a>
+      </div>
+
+      <!-- MEMBER -->
+      <div class="plan plan-featured">
+        <div class="plan-tier">Member</div>
+        <div class="display plan-price" style="color:var(--paper)"><sup>$</sup>15</div>
+        <div class="plan-period">per month · <strong>or $120/year (save 33%)</strong></div>
+        <hr class="plan-divider">
+        <ul class="plan-features">
+          <li>Full access to every article</li>
+          <li>Both case study and analysis formats</li>
+          <li>Complete archive — all back issues</li>
+          <li>4 new pieces per month</li>
+          <li>Discussion question frameworks</li>
+        </ul>
+        <a href="#waitlist" class="plan-btn">Join at Launch Price</a>
+      </div>
+
+      <!-- FOUNDING -->
+      <div class="plan">
+        <div class="plan-tier">Founding Member</div>
+        <div class="display plan-price"><sup>$</sup>250</div>
+        <div class="plan-period">one-time · <strong>lifetime access</strong></div>
+        <hr class="plan-divider">
+        <ul class="plan-features">
+          <li>Everything in Member — forever</li>
+          <li>Listed as a CaseCraft Founding Member</li>
+          <li>Direct feedback line to the author</li>
+          <li>First access to new formats and features</li>
+          <li>Closes June 9 at launch</li>
+        </ul>
+        <a href="#waitlist" class="plan-btn">Secure Founding Spot</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WAITLIST -->
+<section class="waitlist" id="waitlist">
+  <div class="waitlist-inner">
+    <div class="section-eyebrow" style="justify-content:center; margin-bottom:20px;">
+      <span class="label" style="color:rgba(168,131,58,0.7);">Early Access</span>
+    </div>
+    <h2 class="display waitlist-title">Be first.<br><em>Think sharper.</em></h2>
+    <p class="waitlist-sub">
+      CaseCraft launches June 9, 2026. Join the waitlist for founding member pricing and first access.
+    </p>
+    <div class="waitlist-date">
+      <span class="waitlist-date-text">🚀 Launch: June 9, 2026</span>
+    </div>
+
+    <form class="waitlist-form" onsubmit="handleSubmit(event)">
+      <input type="email" class="waitlist-input" placeholder="your@email.com" required id="email-input">
+      <button type="submit" class="waitlist-btn">Notify Me</button>
+    </form>
+    <p class="waitlist-note">No spam. One email when we launch. Unsubscribe anytime.</p>
+    <div id="success-msg" style="display:none; margin-top:24px; font-family:'DM Mono',monospace; font-size:12px; color:var(--gold); letter-spacing:0.1em;">
+      ✓ You're on the list. See you June 9.
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">CASE<span>CRAFT</span></div>
+    <ul class="footer-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#topics">Topics</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="mailto:hello@casecraft.byvenky.com">Contact</a></li>
     </ul>
-  </section>
+    <div class="footer-copy">© 2026 CaseCraft · casecraft.byvenky.com</div>
+  </div>
+</footer>
 
-  <section id="contact">
-    <h2>Contact</h2>
-    <p>For collaborations, custom case development, or speaking inquiries:</p>
-    <p><strong>Email:</strong> <a href="mailto:venky@casecraftbyvenky.com">venky@casecraftbyvenky.com</a></p>
-    <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/vsrambikal/" target="_blank">Venky Srambikal</a></p>
-  </section>
+<script>
+  function handleSubmit(e) {
+    e.preventDefault();
+    document.querySelector('.waitlist-form').style.display = 'none';
+    document.getElementById('success-msg').style.display = 'block';
+  }
 
-  <footer>
-    <p>&copy; 2025 CaseCraft by Venky. All rights reserved.</p>
-  </footer>
+  // Scroll-triggered fade-in for sections
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
 
+  document.querySelectorAll('.format-item, .topic-item, .plan, .credential').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    observer.observe(el);
+  });
+</script>
 </body>
 </html>
